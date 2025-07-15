@@ -7,6 +7,7 @@ import {
 import { uploadPicture } from "../Services/Cloudflare.services";
 import Votes from "../Models/Votes";
 import { Op, Sequelize } from "sequelize";
+import Comments from "../Models/Comment";
 
 const userActionsController: userActionsInterface = {
     createPost: async (
@@ -201,6 +202,66 @@ const userActionsController: userActionsInterface = {
             return res.status(200).json({ post, person1Votecount, person2Votecount });
         } catch (error) {
             console.error("Error fetching user feed:", error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    },
+
+    createComment: async (
+        req: Request & afterVerificationMiddlerwareInterface,
+        res: Response
+    ) => {
+        try {
+            const { postId, comment } = req.body;
+
+            if (!req.user) {
+                return res.status(401).json({ error: "Unauthorized access." });
+            }
+
+            if (!postId || !comment) {
+                return res.status(400).json({ error: "postId and comment are required." });
+            }
+
+            const post = await Face.findOne({ where: { id: postId } });
+
+            if (!post) {
+                return res.status(404).json({ error: "Post not found." });
+            }
+
+            await Comments.create({
+                postId,
+                userId: req.user.id,
+                userName: req.user.name,
+                comment,
+            });
+
+            return res.status(201).json({
+                message: "Comment created successfully",
+                postId,
+                comment,
+            });
+        } catch (error) {
+            console.error("Error creating comment:", error);
+            return res.status(500).json({ error: "Internal server error" });
+        }
+    },
+
+    getComments: async (req: Request, res: Response) => {   
+        try {
+            const { postId } = req.params;
+            console.log(postId);
+
+            if (!postId) {
+                return res.status(400).json({ error: "postId is required." });
+            }
+
+            const comments = await Comments.findAll({
+                where: { postId },
+                order: [['createdAt', 'DESC']]
+            });
+
+            return res.status(200).json({ comments });
+        } catch (error) {
+            console.error("Error fetching comments:", error);
             return res.status(500).json({ error: "Internal server error" });
         }
     }

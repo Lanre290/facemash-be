@@ -46,6 +46,8 @@ app.post("/vote", userActionsController.vote);
 app.get("/fetchPost/:postId", userActionsController.fetchPost);
 app.get("/userposts", AuthMiddleware.verifyToken, userActionsController.fetchUserPosts)
 app.post("/feed", userActionsController.getUserFeed);
+app.post("/comment", AuthMiddleware.verifyToken, userActionsController.createComment);
+app.get("/comments/:postId", userActionsController.getComments);
 
 
 const startServer = async () => {

@@ -19,4 +19,6 @@ export interface userActionsInterface {
   fetchPost: UserActionFn;
   fetchUserPosts: UserActionFn;
   getUserFeed: UserActionFn;
+  createComment: UserActionFn;
+  getComments: UserActionFn;
 }
